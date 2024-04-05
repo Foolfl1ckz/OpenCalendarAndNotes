@@ -2,8 +2,10 @@ import time
 import PySimpleGUI as sg
 from datetime import date
 import json
+import funktioner as f
 
 dato = date.today().strftime("%d/%m/%Y")
+måned = f.getMonth()
 color = '#DAE0E6'
 
 calender = {}
