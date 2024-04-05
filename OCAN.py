@@ -1,5 +1,5 @@
 import time
-import PySimpleGUI as sg
+import PySimpleGUI as sg #finder et nyt modul
 from datetime import date
 import json
 import funktioner as f
