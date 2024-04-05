@@ -1,11 +1,27 @@
 import time
 import PySimpleGUI as sg
 from datetime import date
-
+import json
 
 dato = date.today().strftime("%d/%m/%Y")
 color = '#DAE0E6'
 
+calender = {}
+
+
+calender[str(dato)] = {
+"weekday" : "Friday",
+
+"event" : [""],
+
+"event_description" : [""],
+
+"event_time" : [""]
+
+}
+
+
+print(calender) 
 elements = {
 
 "date":  [sg.Text(dato, text_color = "black",background_color=color, font=("Ariel", 15, "bold"))]
