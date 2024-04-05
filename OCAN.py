@@ -32,11 +32,11 @@ calender[str("05/04/2024")] = {
 print(calender) 
 elements = {
 
-"date":  [sg.Text(dato, text_color = "black",background_color=color, font=("Ariel", 15, "bold"))]
-
+"date":  [sg.Text(dato, text_color = "black",background_color=color, font=("Ariel", 15, "bold"))],
+"Month":  [sg.Text(måned, text_color = "black",background_color=color, font=("Ariel", 15, "bold"))]
 }
 def StartProgram():
-  layout = [elements["date"]]
+  layout = [elements["date"],elements["Month"]]
   window = sg.Window(title="OpenCalenderAndNotes", layout=layout,background_color=color).Finalize()
   window.Maximize()
   while True:
