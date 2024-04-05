@@ -9,7 +9,13 @@ color = '#DAE0E6'
 calender = {}
 
 
-calender[str(dato)] = {
+calender[str("05/04/2024")] = {
+"day": 5,
+
+"month" : 4,
+
+"year" : 2024,
+
 "weekday" : "Friday",
 
 "event" : [""],
