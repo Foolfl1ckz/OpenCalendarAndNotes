@@ -10,6 +10,9 @@
     <height>591</height>
    </rect>
   </property>
+  <property name="mouseTracking">
+   <bool>false</bool>
+  </property>
   <property name="windowTitle">
    <string>OCAN</string>
   </property>
@@ -21,7 +24,7 @@
     <property name="geometry">
      <rect>
       <x>0</x>
-      <y>90</y>
+      <y>80</y>
       <width>971</width>
       <height>20</height>
      </rect>
@@ -39,6 +42,12 @@
       <height>441</height>
      </rect>
     </property>
+    <property name="minimumSize">
+     <size>
+      <width>971</width>
+      <height>441</height>
+     </size>
+    </property>
    </widget>
    <widget class="QLabel" name="label">
     <property name="geometry">
@@ -51,6 +60,19 @@
     </property>
     <property name="text">
      <string>DATE and MONTH</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_2">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>90</y>
+      <width>971</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Date info</string>
     </property>
    </widget>
   </widget>
