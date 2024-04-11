@@ -34,11 +34,19 @@ color = '#DAE0E6'
 """ Dag data:
 calender[str("05/04/2024")] = {
 
+"note" : ",
+
 "event" : [""],
 
-"event_description" : [""],
+"event_description" : {
 
-"event_time" : [""],
+"": ""
+},
+
+"event_time" : {
+
+"": ""
+},
 
 "Definitions" : []
 
@@ -54,9 +62,10 @@ class MainWindow(QMainWindow):
         self.label.setText(f"Date: {måned} {dato}")
 
         self.calendar = self.findChild(QCalendarWidget,"calendarWidget")
-
+        self.calendarPage = self.findChild(QWidget,"CalenderPage")
+        self.calenderEditPage = self.findChild(QWidget,"CalenderEditPage")
+        self.calenderEditPage.hide()
         self.label_2 = self.findChild(QLabel,"label_2")
-        
         self.calendar.selectionChanged.connect(self.grab_date)
         self.calendar.activated.connect(self.editCalender)
 
@@ -64,6 +73,7 @@ class MainWindow(QMainWindow):
     def grab_date(self):
         dateSelected = self.calendar.selectedDate()
         dateSelected = str(dateSelected.toString("dd/MM/yyyy"))
+        
         try: 
             dateEvent = str(calender[dateSelected]["event"][0])
         except:
@@ -73,9 +83,46 @@ class MainWindow(QMainWindow):
     def editCalender(self):
         dateSelected = self.calendar.selectedDate()
         dateSelected = str(dateSelected.toString("dd/MM/yyyy"))
+        self.pickedDateLabel = self.findChild(QLabel,"PickedDateLabel")
+        self.pickedDateLabel.setText(dateSelected)
+        self.eventsComboBox = self.findChild(QComboBox,"eventsComboBox")
+        self.eventsComboBox.addItem("None selected")
+        try: 
+            for x in calender[dateSelected]["event"]:
+                self.eventsComboBox.addItem(x)
+        except:
+            pass
+        self.eventsComboBox.addItem("New event")
+        self.calendarPage.hide()
+        self.calenderEditPage.show()
+        self.eventsComboBox.currentTextChanged.connect(self.updateCalenderEvent)
 
-        print(f"edit calender for date {dateSelected}")
-
+    def updateCalenderEvent(self):
+        dateSelected = self.calendar.selectedDate()
+        dateSelected = str(dateSelected.toString("dd/MM/yyyy"))
+        event =  self.eventsComboBox.currentText()
+        self.eventTextEdit = self.findChild(QTextEdit,"eventTextEdit")
+        self.eventDescriptionTextEdit = self.findChild(QTextEdit,"eventDescriptionTextEdit")
+        
+        if event != "New event": 
+            self.eventTextEdit.setEnabled(False)
+            self.eventDescriptionTextEdit.setEnabled(True)
+        else: 
+            self.eventDescriptionTextEdit.setEnabled(True)
+            self.eventTextEdit.setEnabled(True)
+            self.eventDescriptionTextEdit.setText("")
+        if event != "None selected":
+            self.eventTextEdit.setText(event)
+        else:
+            self.eventTextEdit.setText("")
+            self.eventDescriptionTextEdit.setText("")
+            self.eventDescriptionTextEdit.setEnabled(False)
+        
+        
+        try:
+            self.eventDescriptionTextEdit.setText(calender[dateSelected]["event_description"][event])
+        except:
+            pass
 
 app = QApplication(sys.argv)
 window = MainWindow()
