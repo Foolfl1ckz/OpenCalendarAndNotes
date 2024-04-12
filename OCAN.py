@@ -21,7 +21,6 @@ sys.excepthook = exception_hook
 try:
     calenderFile = open ('calender.json', "r")
     calender = json.loads(calenderFile.read())
-    print(calender)
 except:
     calender = {}
 
