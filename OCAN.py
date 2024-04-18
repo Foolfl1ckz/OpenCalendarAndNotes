@@ -134,7 +134,6 @@ class MainWindow(QMainWindow):
         self.calendarNotesTextEdit.textChanged.connect(self.unSave)
         try: 
             for x in calendar[self.dateSelected]["event"]:
-            for x in calendar[self.dateSelected]["event"]:
                 self.eventsComboBox.addItem(x)
             self.calendarNotesTextEdit.setText(calendar[self.dateSelected]["note"])
             self.calendarNotesTextEdit.setText(calendar[self.dateSelected]["note"])
