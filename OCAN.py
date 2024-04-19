@@ -21,10 +21,7 @@ sys.excepthook = exception_hook
 try:
     calendarFile = open ('calendar.json', "r")
     calendar = json.loads(calendarFile.read())
-    calendarFile = open ('calendar.json', "r")
-    calendar = json.loads(calendarFile.read())
 except:
-    calendar = {}
     calendar = {}
 
 dato = int(date.today().strftime("%d"))
@@ -34,7 +31,6 @@ color = '#DAE0E6'
 
 
 """ Dag data:
-calendar[str("05/04/2024")] = {
 calendar[str("05/04/2024")] = {
 
 "note" : ",
@@ -65,30 +61,24 @@ class MainWindow(QMainWindow):
             self.errors = json.loads(errorFile.read())
         except:
             self.errorShow("000000001", "Error messages could not load")
-        try:
-            errorFile = open ('Errors.json', "r")
-            self.errors = json.loads(errorFile.read())
-        except:
-            self.errorShow("000000001", "Error messages could not load")
         loadUi("OCAN.ui", self)
-
         self.label.setText(f"Date: {måned} {dato}")
         self.saved = True
         self.savedCE = True
-        self.saved = True
-        self.savedCE = True
+        self.actionCalendar  = self.findChild(QAction, "actionCalendar_2")
+        self.actionNotes  = self.findChild(QAction, "actionNotes")
+        self.actionCalendar.triggered.connect(self.exitEditCalendar)
         self.calendar = self.findChild(QCalendarWidget,"calendarWidget")
         self.calendarPage = self.findChild(QWidget,"CalendarPage")
         self.calendarEditPage = self.findChild(QWidget,"CalendarEditPage")
+        self.noteLoadPage = self.findChild(QWidget,"NoteLoadPage")
         self.calendarEditPage.hide()
-        self.calendarPage = self.findChild(QWidget,"CalendarPage")
-        self.calendarEditPage = self.findChild(QWidget,"CalendarEditPage")
-        self.calendarEditPage.hide()
+        self.noteLoadPage.hide()
         self.label_2 = self.findChild(QLabel,"label_2")
         self.calendar.selectionChanged.connect(self.grab_date)
         self.calendar.activated.connect(self.editCalendar)
+        self.actionNotes.triggered.connect(self.openLoadNotes)
         
-        self.calendar.activated.connect(self.editCalendar)
         
 
 
@@ -112,46 +102,29 @@ class MainWindow(QMainWindow):
                 self.errorShow("000000004")
         try: 
             dateEvent = str(calendar[self.dateSelected]["event"][0])
-            dateEvent = str(calendar[self.dateSelected]["event"][0])
         except:
             dateEvent = "No events"
         self.label_2.setText(dateEvent)
     
     def editCalendar(self):
-        self.calendarNotesTextEdit = self.findChild(QTextEdit,"calendarNotesTextEdit")
-    def editCalendar(self):
+        self.calendarEditExitPushButton = self.findChild(QPushButton, "calendarEditExitPushButton")
         self.calendarNotesTextEdit = self.findChild(QTextEdit,"calendarNotesTextEdit")
         self.pickedDateLabel = self.findChild(QLabel,"PickedDateLabel")
-        self.pickedDateLabel.setText(self.dateSelected)
         self.pickedDateLabel.setText(self.dateSelected)
         self.eventsComboBox = self.findChild(QComboBox,"eventsComboBox")
         self.eventsComboBox.addItem("None selected")
         self.calendarEventSavePushButton = self.findChild(QPushButton,"calendarEventSavePushButton")
         self.calendarEditSavePushButton = self.findChild(QPushButton,"calendarEditSavePushButton")
-        self.calendarNotesTextEdit.textChanged.connect(self.unSave)
-        self.calendarEventSavePushButton = self.findChild(QPushButton,"calendarEventSavePushButton")
-        self.calendarEditSavePushButton = self.findChild(QPushButton,"calendarEditSavePushButton")
-        self.calendarNotesTextEdit.textChanged.connect(self.unSave)
+        self.calendarEditExitPushButton.pressed.connect(self.exitEditCalendar)
         try: 
             for x in calendar[self.dateSelected]["event"]:
                 self.eventsComboBox.addItem(x)
             self.calendarNotesTextEdit.setText(calendar[self.dateSelected]["note"])
-            self.calendarNotesTextEdit.setText(calendar[self.dateSelected]["note"])
         except:
             self.errorShow("000000008")
-            self.errorShow("000000008")
+        self.calendarNotesTextEdit.textChanged.connect(self.unSave)
         self.eventsComboBox.addItem("New event")
         self.calendarPage.hide()
-        self.calendarEditPage.show()
-        self.eventsComboBox.currentTextChanged.connect(self.updateCalendarEvent)
-        self.calendarEventSavePushButton.pressed.connect(self.safeCalendarEvent)
-        self.calendarEditSavePushButton.pressed.connect(self.safeCalendar)
-    def unSave(self):
-        self.saved = False
-
-    def updateCalendarEvent(self):
-
-        self.savedCE = False
         self.calendarEditPage.show()
         self.eventsComboBox.currentTextChanged.connect(self.updateCalendarEvent)
         self.calendarEventSavePushButton.pressed.connect(self.safeCalendarEvent)
@@ -193,7 +166,8 @@ class MainWindow(QMainWindow):
             if self.eventTextEdit.toPlainText() != "New event" and self.eventTextEdit.toPlainText() != "" and self.eventTextEdit.toPlainText() != "None selected" and self.eventsComboBox.findText(self.eventTextEdit.toPlainText()) == -1:
                 if self.eventTextEdit.toPlainText() not in calendar[self.dateSelected]["event"]: calendar[self.dateSelected]["event"].append(self.eventTextEdit.toPlainText())
                 calendar[self.dateSelected]["event_description"][self.eventTextEdit.toPlainText()] = self.eventDescriptionTextEdit.toPlainText()
-                self.eventsComboBox.addItem(self.eventTextEdit.toPlainText())
+                
+                self.eventsComboBox.insertItem(self.eventsComboBox.currentIndex(),self.eventTextEdit.toPlainText())
                 self.savedCE = True
                 self.saved = False
             else:
@@ -221,10 +195,13 @@ class MainWindow(QMainWindow):
 
 
     def safeCheck(self, type):
+        global calendar
         dlg = QMessageBox(self)
         dlg.setWindowTitle("You haven't saved!")
         if type == "CE":
             dlg.setText("Event not saved, do you you want to save?")
+        if type == "C":
+            dlg.setText("Calender not saved, do you you want to save?")    
         dlg.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
         dlg.setIcon(QMessageBox.Icon.Question)
         button = dlg.exec()
@@ -233,13 +210,30 @@ class MainWindow(QMainWindow):
             if button == QMessageBox.StandardButton.Yes:
                 self.safeCalendarEvent()      
             elif self.saved == False: 
-                calendar[self.dateSelected]["note"] = self.calendarNotesTextEdit.toPlainText()
+                self.safeCalendar(self)
+        if type == "C":
+            if button == QMessageBox.StandardButton.Yes:
+                self.safeCalendar()
+            else:
+                self.saved = True
                 try:
-                    calendarFileWrite = open ('calendar.json', "w")
-                    json.dump(calendar, calendarFileWrite)
-                    self.saved = True
+                    calendarFile = open ('calendar.json', "r")
+                    calendar = json.loads(calendarFile.read())
                 except:
-                    self.errorShow("000000007")
+                    calendar = {}
+
+
+    def exitEditCalendar(self):
+        if self.saved == False:
+         self.safeCheck("C")
+        self.calendarEditPage.hide()
+        self.noteLoadPage.hide()
+        self.calendarPage.show()
+
+    def openLoadNotes(self):
+        self.calendarEditPage.hide()
+        self.noteLoadPage.show()
+        self.calendarPage.hide()
 
     def errorShow(self, errorNumber, errorMessage=""):
         
@@ -264,36 +258,6 @@ class MainWindow(QMainWindow):
             pass
         else:
             pass
-        
-    
-
-
-                
-
-
-            olderrorNumber = errorNumber[:]
-            errorNumber = "000000002"
-            errorMessage = f"Error with no error message: {olderrorNumber}"
-        button = QMessageBox.critical(
-            self,
-            f"Error: {errorNumber}",
-            f"Message: {errorMessage}",
-            buttons=QMessageBox.StandardButton.Discard | QMessageBox.StandardButton.Close,
-            defaultButton=QMessageBox.StandardButton.Discard,
-        )
-
-        if button == QMessageBox.StandardButton.Discard:
-            pass
-        elif button == QMessageBox.StandardButton.Close:
-            pass
-        else:
-            pass
-        
-    
-
-
-                
-
 
 
 app = QApplication(sys.argv)
