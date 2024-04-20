@@ -6,7 +6,8 @@
   "000000005" : "Error saving calender: Code 000000005",
   "000000006" : "Error saving calender: Code 000000006",
   "000000007" : "Error saving calender: Code 000000007",
-  "000000008" : "Error loading notes from calender: Code 000000008"
+  "000000008" : "Error loading notes from calender: Code 000000008",
+  "000000009" : "Error loading notes.xml: Code 000000009"
 
 
 

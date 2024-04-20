@@ -6,8 +6,8 @@ from PyQt6.QtGui import * #finder et nyt modul, brug "pip install PyQt6" kilde: 
 from PyQt6.QtWidgets import *
 from PyQt6.QtCore import *
 from PyQt6.uic import *
-
 import sys
+import xml.etree.ElementTree as et
 
 sys._excepthook = sys.excepthook 
 def exception_hook(exctype, value, traceback):
@@ -23,6 +23,7 @@ try:
     calendar = json.loads(calendarFile.read())
 except:
     calendar = {}
+
 
 dato = int(date.today().strftime("%d"))
 måned = f.getMonth()
@@ -61,6 +62,11 @@ class MainWindow(QMainWindow):
             self.errors = json.loads(errorFile.read())
         except:
             self.errorShow("000000001", "Error messages could not load")
+        try:
+            self.noteFile = open ('notes.xml', "r").read()
+        except:
+            self.errorShow("000000009")
+
         loadUi("OCAN.ui", self)
         self.label.setText(f"Date: {måned} {dato}")
         self.saved = True
@@ -70,10 +76,12 @@ class MainWindow(QMainWindow):
         self.actionCalendar.triggered.connect(self.exitEditCalendar)
         self.calendar = self.findChild(QCalendarWidget,"calendarWidget")
         self.calendarPage = self.findChild(QWidget,"CalendarPage")
+        self.notePage = self.findChild(QWidget,"NotePage")
         self.calendarEditPage = self.findChild(QWidget,"CalendarEditPage")
         self.noteLoadPage = self.findChild(QWidget,"NoteLoadPage")
         self.calendarEditPage.hide()
         self.noteLoadPage.hide()
+        self.notePage.hide()
         self.label_2 = self.findChild(QLabel,"label_2")
         self.calendar.selectionChanged.connect(self.grab_date)
         self.calendar.activated.connect(self.editCalendar)
@@ -112,6 +120,7 @@ class MainWindow(QMainWindow):
         self.pickedDateLabel = self.findChild(QLabel,"PickedDateLabel")
         self.pickedDateLabel.setText(self.dateSelected)
         self.eventsComboBox = self.findChild(QComboBox,"eventsComboBox")
+        self.eventsComboBox.clear()
         self.eventsComboBox.addItem("None selected")
         self.calendarEventSavePushButton = self.findChild(QPushButton,"calendarEventSavePushButton")
         self.calendarEditSavePushButton = self.findChild(QPushButton,"calendarEditSavePushButton")
@@ -221,19 +230,74 @@ class MainWindow(QMainWindow):
                     calendar = json.loads(calendarFile.read())
                 except:
                     calendar = {}
+    
+    def loadNoteTree(self, s):
+        tree = et.fromstring(s)
+        self.noteTreeView = self.findChild(QTreeWidget, "noteTreeView")
+        self.pickedNoteRootLable = self.findChild(QLabel, "pickedNoteRootLable")
+        self.noteTreeView.clear()
+        self.noteTreeView.setColumnCount(1)
+        widgetItem = QTreeWidgetItem([tree.tag])
+        self.noteTreeView.addTopLevelItem(widgetItem)
+        self.noteTreeView.itemClicked.connect(self.itemClicked)
+        self.noteTreeView.activated.connect(self.openNote)
+        self.noteTreeView.setHeaderHidden(True)
 
+        def displayNoteTree(widgetItem,s):
+            for child in s:
+                branch = QTreeWidgetItem([child.tag])
+                widgetItem.addChild(branch)
+                displayNoteTree(branch, child)
+            if s.text is not None:
+                content = s.text
+                widgetItem.addChild(QTreeWidgetItem([content]))
+        displayNoteTree(widgetItem, tree)
 
     def exitEditCalendar(self):
         if self.saved == False:
          self.safeCheck("C")
         self.calendarEditPage.hide()
         self.noteLoadPage.hide()
+        self.notePage.hide()
         self.calendarPage.show()
 
     def openLoadNotes(self):
         self.calendarEditPage.hide()
         self.noteLoadPage.show()
+        self.notePage.hide()
         self.calendarPage.hide()
+        self.loadNoteTree(self.noteFile)
+    
+    def itemClicked(self):
+        item=self.noteTreeView.currentItem()
+        text = self.getParentPath(item)
+        self.pickedNoteRootLable.setText(text)
+        self.currentNote = item.text(0)
+        self.currentPath = text      
+    
+    def getParentPath(self, item):
+        def getParent(item,outstring):
+            if item.parent() is not None:
+                outstring = item.parent().text(0) + "/"+outstring
+                return getParent(item.parent(),outstring)
+            else:
+                return outstring
+        return getParent(item,item.text(0))
+
+    def openNote(self):
+        self.calendarEditPage.hide()
+        self.noteLoadPage.hide()
+        self.calendarPage.hide()
+        self.notePage.show()
+        self.noteEditLayout = self.findChild(QWidget, "noteEditLayout_2")
+        self.noteEditLayout.hide()
+        self.noteTitleLineEdit = self.findChild(QLineEdit, "noteTitleLineEdit")
+        self.noteShowRootLabel = self.findChild(QLabel, "noteShowRootLabel")
+        self.noteTitleLineEdit.setText(self.currentNote)
+        self.noteShowRootLabel.setText(self.currentPath)
+
+        
+
 
     def errorShow(self, errorNumber, errorMessage=""):
         
