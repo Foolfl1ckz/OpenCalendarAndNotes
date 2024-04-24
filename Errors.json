@@ -8,7 +8,8 @@
   "000000007" : "Error saving calender: Code 000000007",
   "000000008" : "Error loading notes from calender: Code 000000008",
   "000000009" : "Error loading notes.xml: Code 000000009",
-  "000000010" : "Error loading data.json: Code 000000010"
+  "000000010" : "Error loading data.json: Code 000000010",
+  "000000011" : "Error saving data.json: Code 000000011"
 
 
 

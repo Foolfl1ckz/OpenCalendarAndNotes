@@ -1,18 +1,1 @@
-{
-  "000000001" : "Error messages could not load",
-  "000000002" : "Error with no error message",
-  "000000003" : "Error loading events: Code 000000003",
-  "000000004" : "Error loading events: Code 000000004",
-  "000000005" : "Error saving calender: Code 000000005",
-  "000000006" : "Error saving calender: Code 000000006",
-  "000000007" : "Error saving calender: Code 000000007",
-  "000000008" : "Error loading notes from calender: Code 000000008",
-  "000000009" : "Error loading notes.xml: Code 000000009",
-  "000000010" : "Error loading data.json: Code 000000010"
-
-
-
-
-
-
-}
+{"noter": "Hej jeg er google link[google.com] concept[Mol]"}

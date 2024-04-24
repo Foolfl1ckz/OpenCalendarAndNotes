@@ -2,12 +2,13 @@ import time
 from datetime import date, datetime
 import json
 import funktioner as f
-from PyQt6.QtGui import * #finder et nyt modul, brug "pip install PyQt6" kilde: https://www.pythonguis.com/tutorials/pyqt6-signals-slots-events/
+from PyQt6.QtGui import * #brug "pip install PyQt6" kilde: https://www.pythonguis.com/tutorials/pyqt6-signals-slots-events/
 from PyQt6.QtWidgets import *
 from PyQt6.QtCore import *
 from PyQt6.uic import *
 import sys
 import xml.etree.ElementTree as et
+import re
 
 sys._excepthook = sys.excepthook 
 def exception_hook(exctype, value, traceback):
@@ -77,21 +78,26 @@ class MainWindow(QMainWindow):
         self.label.setText(f"Date: {måned} {dato}")
         self.saved = True
         self.savedCE = True
+        self.savedN = True
         self.actionCalendar  = self.findChild(QAction, "actionCalendar_2")
         self.actionNotes  = self.findChild(QAction, "actionNotes")
+        self.actionNewNote  = self.findChild(QAction, "actionNew_note")
         self.actionCalendar.triggered.connect(self.exitEditCalendar)
         self.calendar = self.findChild(QCalendarWidget,"calendarWidget")
         self.calendarPage = self.findChild(QWidget,"CalendarPage")
         self.notePage = self.findChild(QWidget,"NotePage")
+        self.newNotePage = self.findChild(QWidget,"newNotePage")
         self.calendarEditPage = self.findChild(QWidget,"CalendarEditPage")
         self.noteLoadPage = self.findChild(QWidget,"NoteLoadPage")
         self.calendarEditPage.hide()
         self.noteLoadPage.hide()
         self.notePage.hide()
+        self.newNotePage.hide()
         self.label_2 = self.findChild(QLabel,"label_2")
         self.calendar.selectionChanged.connect(self.grab_date)
         self.calendar.activated.connect(self.editCalendar)
         self.actionNotes.triggered.connect(self.openLoadNotes)
+        self.actionNewNote.triggered.connect(self.openNewNotes)
         
         
 
@@ -121,6 +127,9 @@ class MainWindow(QMainWindow):
         self.label_2.setText(dateEvent)
     
     def editCalendar(self):
+        if self.savedN == False:
+            self.safeCheck("N")
+        self.newNotePage.hide()
         self.calendarEditExitPushButton = self.findChild(QPushButton, "calendarEditExitPushButton")
         self.calendarNotesTextEdit = self.findChild(QTextEdit,"calendarNotesTextEdit")
         self.pickedDateLabel = self.findChild(QLabel,"PickedDateLabel")
@@ -134,7 +143,7 @@ class MainWindow(QMainWindow):
         try: 
             for x in calendar[self.dateSelected]["event"]:
                 self.eventsComboBox.addItem(x)
-            self.calendarNotesTextEdit.setText(calendar[self.dateSelected]["note"])
+            self.calendarNotesTextEdit.setPlainText(calendar[self.dateSelected]["note"])
         except:
             self.errorShow("000000008")
         self.calendarNotesTextEdit.textChanged.connect(self.unSave)
@@ -171,7 +180,7 @@ class MainWindow(QMainWindow):
         
         
         try:
-            self.eventDescriptionTextEdit.setText(calendar[self.dateSelected]["event_description"][event])
+            self.eventDescriptionTextEdit.setPlainText(calendar[self.dateSelected]["event_description"][event])
         except:
             #self.errorShow("000000003")
             pass
@@ -216,7 +225,9 @@ class MainWindow(QMainWindow):
         if type == "CE":
             dlg.setText("Event not saved, do you you want to save?")
         if type == "C":
-            dlg.setText("Calender not saved, do you you want to save?")    
+            dlg.setText("Calender not saved, do you you want to save?")
+        if type == "N":
+            dlg.setText("Note not saved, do you you want to save?")    
         dlg.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
         dlg.setIcon(QMessageBox.Icon.Question)
         button = dlg.exec()
@@ -236,8 +247,18 @@ class MainWindow(QMainWindow):
                     calendar = json.loads(calendarFile.read())
                 except:
                     calendar = {}
-    
+        if type == "N": 
+            if button == QMessageBox.StandardButton.Yes:
+                self.saveNote()
+            else:
+                self.savedN = True
+
+
     def loadNoteTree(self, s):
+        if self.saved == False:
+            self.safeCheck("C")
+        if self.savedN == False:
+            self.safeCheck("N")
         tree = et.fromstring(s)
         self.noteTreeView = self.findChild(QTreeWidget, "noteTreeView")
         self.pickedNoteRootLable = self.findChild(QLabel, "pickedNoteRootLable")
@@ -262,6 +283,8 @@ class MainWindow(QMainWindow):
     def exitEditCalendar(self):
         if self.saved == False:
          self.safeCheck("C")
+        if self.savedN == False:
+         self.safeCheck("N")
         self.calendarEditPage.hide()
         self.noteLoadPage.hide()
         self.notePage.hide()
@@ -272,6 +295,7 @@ class MainWindow(QMainWindow):
         self.noteLoadPage.show()
         self.notePage.hide()
         self.calendarPage.hide()
+        self.newNotePage.hide()
         self.loadNoteTree(self.noteFile)
     
     def itemClicked(self):
@@ -294,14 +318,62 @@ class MainWindow(QMainWindow):
         self.calendarEditPage.hide()
         self.noteLoadPage.hide()
         self.calendarPage.hide()
+        self.newNotePage.hide()
         self.notePage.show()
         self.noteEditLayout = self.findChild(QWidget, "noteEditLayout_2")
+        self.noteShowLayout = self.findChild(QWidget, "noteShowLayout_2")
+        self.noteShowLayout.show()
         self.noteEditLayout.hide()
+        self.noteEditPushButton = self.findChild(QPushButton, "noteEditPushButton_2")
+        self.noteEditPushButton.pressed.connect(self.editNote)
         self.noteTitleLineEdit = self.findChild(QLineEdit, "noteTitleLineEdit")
         self.noteShowRootLabel = self.findChild(QLabel, "noteShowRootLabel")
+        self.noteTextBrowser = self.findChild(QTextBrowser, "noteTextBrowser")
+        self.noteTextBrowser.setText(self.convertNote(self.currentPath))
+        self.noteTextBrowser.setOpenExternalLinks(True)
         self.noteTitleLineEdit.setText(self.currentNote)
         self.noteShowRootLabel.setText(self.currentPath)
 
+    def editNote(self):
+        self.noteTextEdit = self.findChild(QTextEdit, "noteTextEdit")
+        self.noteShowLayout.hide()
+        self.noteEditLayout.show()
+        self.noteTextEdit.setPlainText(self.noteData[self.currentPath])
+        self.savedN = False
+        self.noteSavePushButton = self.findChild(QPushButton, "noteSavePushButton")
+        self.noteSavePushButton.pressed.connect(self.saveNote)
+        
+
+    def saveNote(self):
+        try:
+            self.noteData[self.currentPath] = self.noteTextEdit.toPlainText()
+            noteFileWrite = open ('data.json', "w")
+            json.dump(self.noteData, noteFileWrite)
+            self.savedN = True
+            self.openNote()
+        except:
+            self.errorShow("000000011")
+
+
+    def openNewNotes(self):
+        self.calendarEditPage.hide()
+        self.noteLoadPage.hide()
+        self.calendarPage.hide()
+        self.notePage.hide()
+        self.newNotePage.show()
+
+    def convertNote(self,note):
+        try: text = self.noteData[note]
+        except: text = ""
+        prefix = "concept["
+        suffix = "]"
+        pattern = re.escape(prefix) + "(.*?)" + re.escape(suffix)
+        replaced_text = re.sub(pattern, lambda match: "<a href='#'>{}</a>".format(match.group(1)), text)
+        prefix = "link["
+        suffix = "]"
+        pattern = re.escape(prefix) + "(.*?)" + re.escape(suffix)
+        replaced_text = re.sub(pattern, lambda match: "<a href='https://{}'>link</a>".format(match.group(1)), replaced_text)
+        return replaced_text
         
 
 
