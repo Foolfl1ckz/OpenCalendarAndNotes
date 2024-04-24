@@ -63,9 +63,15 @@ class MainWindow(QMainWindow):
         except:
             self.errorShow("000000001", "Error messages could not load")
         try:
-            self.noteFile = open ('notes.xml', "r").read()
+            self.noteFile = open('notes.xml', "r").read()
         except:
             self.errorShow("000000009")
+        try:
+            self.dataFile = open('data.json', "r")
+            self.noteData = json.loads(self.dataFile.read())
+        except:
+            self.errorShow("000000010")
+            self.noteData = {}
 
         loadUi("OCAN.ui", self)
         self.label.setText(f"Date: {måned} {dato}")
