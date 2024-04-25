@@ -288,6 +288,7 @@ class MainWindow(QMainWindow):
         self.calendarEditPage.hide()
         self.noteLoadPage.hide()
         self.notePage.hide()
+        self.newNotePage.hide()
         self.calendarPage.show()
 
     def openLoadNotes(self):
@@ -356,11 +357,31 @@ class MainWindow(QMainWindow):
 
 
     def openNewNotes(self):
+        #TODO#
+        if self.saved == False:
+            self.safeCheck("C")
+        if self.savedN == False:
+            self.safeCheck("N")
+        tree = et.fromstring(self.noteFile)
         self.calendarEditPage.hide()
         self.noteLoadPage.hide()
         self.calendarPage.hide()
         self.notePage.hide()
         self.newNotePage.show()
+        self.newNoteTreeWidget = self.findChild(QTreeWidget, "newNoteTreeWidget")
+        self.newNoteTreeWidget.setColumnCount(1)
+        widgetItem = QTreeWidgetItem([tree.tag])
+        self.noteTreeView.addTopLevelItem(widgetItem)
+
+        def displayNoteTree(widgetItem,s):
+            for child in s:
+                branch = QTreeWidgetItem([child.tag])
+                widgetItem.addChild(branch)
+                displayNoteTree(branch, child)
+            if s.text is not None:
+                content = s.text
+                widgetItem.addChild(QTreeWidgetItem([content]))
+        displayNoteTree(widgetItem, tree)
 
     def convertNote(self,note):
         try: text = self.noteData[note]
