@@ -79,6 +79,9 @@ class MainWindow(QMainWindow):
         self.saved = True
         self.savedCE = True
         self.savedN = True
+        self.noteEditLayout = self.findChild(QWidget, "noteEditLayout_2")
+        self.noteShowLayout = self.findChild(QWidget, "noteShowLayout_2")
+        self.noteTextEdit = self.findChild(QTextEdit, "noteTextEdit")
         self.actionCalendar  = self.findChild(QAction, "actionCalendar_2")
         self.actionNotes  = self.findChild(QAction, "actionNotes")
         self.actionNewNote  = self.findChild(QAction, "actionNew_note")
@@ -89,6 +92,28 @@ class MainWindow(QMainWindow):
         self.newNotePage = self.findChild(QWidget,"newNotePage")
         self.calendarEditPage = self.findChild(QWidget,"CalendarEditPage")
         self.noteLoadPage = self.findChild(QWidget,"NoteLoadPage")
+        self.noteEditPushButton = self.findChild(QPushButton, "noteEditPushButton_2")
+        self.noteTitleLineEdit = self.findChild(QLineEdit, "noteTitleLineEdit")
+        self.noteShowRootLabel = self.findChild(QLabel, "noteShowRootLabel")
+        self.noteTextBrowser = self.findChild(QTextBrowser, "noteTextBrowser")
+        self.calendarEditExitPushButton = self.findChild(QPushButton, "calendarEditExitPushButton")
+        self.calendarNotesTextEdit = self.findChild(QTextEdit,"calendarNotesTextEdit")
+        self.pickedDateLabel = self.findChild(QLabel,"PickedDateLabel")
+        self.calendarEventSavePushButton = self.findChild(QPushButton,"calendarEventSavePushButton")
+        self.calendarEditSavePushButton = self.findChild(QPushButton,"calendarEditSavePushButton")
+        self.eventsComboBox = self.findChild(QComboBox,"eventsComboBox")
+        self.noteTreeView = self.findChild(QTreeWidget, "noteTreeView")
+        self.pickedNoteRootLable = self.findChild(QLabel, "pickedNoteRootLable")
+        self.newNotePathLabel = self.findChild(QPushButton, "newNotePathLabel")
+        self.newNoteTitleLineEdit = self.findChild(QLineEdit, "newNoteTitleLineEdit")
+        self.newNoteTitleLineEdit.textChanged.connect(self.reloadNewNotePath)
+        self.noteTreeView.itemClicked.connect(self.itemClicked)
+        self.noteTreeView.activated.connect(self.openNote)
+        self.eventsComboBox.currentTextChanged.connect(self.updateCalendarEvent)
+        self.calendarEventSavePushButton.pressed.connect(self.safeCalendarEvent)
+        self.calendarEditSavePushButton.pressed.connect(self.safeCalendar)
+        self.calendarNotesTextEdit.textChanged.connect(self.unSave)
+        self.calendarEditExitPushButton.pressed.connect(self.exitEditCalendar)
         self.calendarEditPage.hide()
         self.noteLoadPage.hide()
         self.notePage.hide()
@@ -98,7 +123,11 @@ class MainWindow(QMainWindow):
         self.calendar.activated.connect(self.editCalendar)
         self.actionNotes.triggered.connect(self.openLoadNotes)
         self.actionNewNote.triggered.connect(self.openNewNotes)
+        self.noteEditPushButton.pressed.connect(self.editNote)
+        self.newNoteTreeWidget.activated.connect(self.showRootLabel)
+        self.newNotePathLabel.pressed.connect(self.changePath)
         
+       
         
 
 
@@ -130,29 +159,18 @@ class MainWindow(QMainWindow):
         if self.savedN == False:
             self.safeCheck("N")
         self.newNotePage.hide()
-        self.calendarEditExitPushButton = self.findChild(QPushButton, "calendarEditExitPushButton")
-        self.calendarNotesTextEdit = self.findChild(QTextEdit,"calendarNotesTextEdit")
-        self.pickedDateLabel = self.findChild(QLabel,"PickedDateLabel")
         self.pickedDateLabel.setText(self.dateSelected)
-        self.eventsComboBox = self.findChild(QComboBox,"eventsComboBox")
         self.eventsComboBox.clear()
         self.eventsComboBox.addItem("None selected")
-        self.calendarEventSavePushButton = self.findChild(QPushButton,"calendarEventSavePushButton")
-        self.calendarEditSavePushButton = self.findChild(QPushButton,"calendarEditSavePushButton")
-        self.calendarEditExitPushButton.pressed.connect(self.exitEditCalendar)
         try: 
             for x in calendar[self.dateSelected]["event"]:
                 self.eventsComboBox.addItem(x)
             self.calendarNotesTextEdit.setPlainText(calendar[self.dateSelected]["note"])
         except:
             self.errorShow("000000008")
-        self.calendarNotesTextEdit.textChanged.connect(self.unSave)
         self.eventsComboBox.addItem("New event")
         self.calendarPage.hide()
         self.calendarEditPage.show()
-        self.eventsComboBox.currentTextChanged.connect(self.updateCalendarEvent)
-        self.calendarEventSavePushButton.pressed.connect(self.safeCalendarEvent)
-        self.calendarEditSavePushButton.pressed.connect(self.safeCalendar)
     def unSave(self):
         self.saved = False
 
@@ -260,14 +278,10 @@ class MainWindow(QMainWindow):
         if self.savedN == False:
             self.safeCheck("N")
         tree = et.fromstring(s)
-        self.noteTreeView = self.findChild(QTreeWidget, "noteTreeView")
-        self.pickedNoteRootLable = self.findChild(QLabel, "pickedNoteRootLable")
         self.noteTreeView.clear()
         self.noteTreeView.setColumnCount(1)
         widgetItem = QTreeWidgetItem([tree.tag])
         self.noteTreeView.addTopLevelItem(widgetItem)
-        self.noteTreeView.itemClicked.connect(self.itemClicked)
-        self.noteTreeView.activated.connect(self.openNote)
         self.noteTreeView.setHeaderHidden(True)
 
         def displayNoteTree(widgetItem,s):
@@ -321,25 +335,20 @@ class MainWindow(QMainWindow):
         self.calendarPage.hide()
         self.newNotePage.hide()
         self.notePage.show()
-        self.noteEditLayout = self.findChild(QWidget, "noteEditLayout_2")
-        self.noteShowLayout = self.findChild(QWidget, "noteShowLayout_2")
         self.noteShowLayout.show()
         self.noteEditLayout.hide()
-        self.noteEditPushButton = self.findChild(QPushButton, "noteEditPushButton_2")
-        self.noteEditPushButton.pressed.connect(self.editNote)
-        self.noteTitleLineEdit = self.findChild(QLineEdit, "noteTitleLineEdit")
-        self.noteShowRootLabel = self.findChild(QLabel, "noteShowRootLabel")
-        self.noteTextBrowser = self.findChild(QTextBrowser, "noteTextBrowser")
         self.noteTextBrowser.setText(self.convertNote(self.currentPath))
         self.noteTextBrowser.setOpenExternalLinks(True)
         self.noteTitleLineEdit.setText(self.currentNote)
         self.noteShowRootLabel.setText(self.currentPath)
+        
 
     def editNote(self):
-        self.noteTextEdit = self.findChild(QTextEdit, "noteTextEdit")
         self.noteShowLayout.hide()
         self.noteEditLayout.show()
         self.noteTextEdit.setPlainText(self.noteData[self.currentPath])
+        try: self.noteTextEdit.setPlainText(self.noteData[self.currentPath])
+        except: self.noteTextEdit.setPlainText("")
         self.savedN = False
         self.noteSavePushButton = self.findChild(QPushButton, "noteSavePushButton")
         self.noteSavePushButton.pressed.connect(self.saveNote)
@@ -362,6 +371,9 @@ class MainWindow(QMainWindow):
             self.safeCheck("C")
         if self.savedN == False:
             self.safeCheck("N")
+        self.newNoteTreeWidget.clear()
+        self.newNoteTreeWidget.show()
+        self.newNotePathLabel.hide()
         tree = et.fromstring(self.noteFile)
         self.calendarEditPage.hide()
         self.noteLoadPage.hide()
@@ -370,8 +382,11 @@ class MainWindow(QMainWindow):
         self.newNotePage.show()
         self.newNoteTreeWidget = self.findChild(QTreeWidget, "newNoteTreeWidget")
         self.newNoteTreeWidget.setColumnCount(1)
+        self.newNoteTreeWidget.setHeaderHidden(True)
         widgetItem = QTreeWidgetItem([tree.tag])
-        self.noteTreeView.addTopLevelItem(widgetItem)
+        self.newNoteTreeWidget.addTopLevelItem(widgetItem)
+        
+        
 
         def displayNoteTree(widgetItem,s):
             for child in s:
@@ -382,6 +397,17 @@ class MainWindow(QMainWindow):
                 content = s.text
                 widgetItem.addChild(QTreeWidgetItem([content]))
         displayNoteTree(widgetItem, tree)
+
+    def showRootLabel(self):
+        self.newNotePathLabel.show()
+        item=self.newNoteTreeWidget.currentItem()
+        text = self.getParentPath(item)
+        self.pickedNoteRootLable.setText(text)
+        self.currentNote = item.text(0)
+        self.currentPath = text 
+        self.newNotePathLabel.setText(f"{self.currentPath}/{self.newNoteTitleLineEdit.text()}")
+        self.newNoteTreeWidget.hide()
+        
 
     def convertNote(self,note):
         try: text = self.noteData[note]
@@ -395,8 +421,31 @@ class MainWindow(QMainWindow):
         pattern = re.escape(prefix) + "(.*?)" + re.escape(suffix)
         replaced_text = re.sub(pattern, lambda match: "<a href='https://{}'>link</a>".format(match.group(1)), replaced_text)
         return replaced_text
+
+    def changePath(self):
+        self.newNoteTreeWidget.clear()
+        self.newNotePathLabel.hide()
+        self.newNoteTreeWidget.show()
+        tree = et.fromstring(self.noteFile)
+        self.newNoteTreeWidget = self.findChild(QTreeWidget, "newNoteTreeWidget")
+        self.newNoteTreeWidget.setColumnCount(1)
+        self.newNoteTreeWidget.setHeaderHidden(True)
+        widgetItem = QTreeWidgetItem([tree.tag])
+        self.newNoteTreeWidget.addTopLevelItem(widgetItem)
+        def displayNoteTree(widgetItem,s):
+            for child in s:
+                branch = QTreeWidgetItem([child.tag])
+                widgetItem.addChild(branch)
+                displayNoteTree(branch, child)
+            if s.text is not None:
+                content = s.text
+                widgetItem.addChild(QTreeWidgetItem([content]))
+        displayNoteTree(widgetItem, tree)
         
 
+    def reloadNewNotePath(self):
+        try: self.newNotePathLabel.setText(f"{self.currentPath}/{self.newNoteTitleLineEdit.text()}")
+        except: pass
 
     def errorShow(self, errorNumber, errorMessage=""):
         

@@ -67,13 +67,27 @@
             </widget>
            </item>
            <item row="1" column="1">
-            <widget class="QTreeWidget" name="newNoteTreeWidget">
-             <column>
-              <property name="text">
-               <string notr="true">1</string>
-              </property>
-             </column>
-            </widget>
+            <layout class="QVBoxLayout" name="verticalLayout_10">
+             <item>
+              <widget class="QPushButton" name="newNotePathLabel">
+               <property name="styleSheet">
+                <string notr="true">text-align: left; </string>
+               </property>
+               <property name="text">
+                <string/>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QTreeWidget" name="newNoteTreeWidget">
+               <column>
+                <property name="text">
+                 <string notr="true">1</string>
+                </property>
+               </column>
+              </widget>
+             </item>
+            </layout>
            </item>
           </layout>
          </item>
