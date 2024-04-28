@@ -371,6 +371,7 @@ class MainWindow(QMainWindow):
             self.safeCheck("C")
         if self.savedN == False:
             self.safeCheck("N")
+        self.savedNN = False #TODO gør det så det kun sker ved ændringer
         self.newNoteTreeWidget.clear()
         self.newNoteTreeWidget.show()
         self.newNotePathLabel.hide()
@@ -397,6 +398,10 @@ class MainWindow(QMainWindow):
                 content = s.text
                 widgetItem.addChild(QTreeWidgetItem([content]))
         displayNoteTree(widgetItem, tree)
+
+    def saveNewNote(self):
+        if not self.savedNN:
+            pass #TODO gem i xml og json 
 
     def showRootLabel(self):
         self.newNotePathLabel.show()
