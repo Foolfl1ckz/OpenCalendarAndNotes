@@ -1,4 +1,4 @@
-import time 
+#license GPL-3.0-or-later
 from datetime import date, datetime
 import json
 import funktioner as f
