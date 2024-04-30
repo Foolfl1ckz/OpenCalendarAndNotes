@@ -27,6 +27,7 @@ dato = int(date.today().strftime("%d"))
 måned = f.getMonth()
 color = '#DAE0E6'
 
+
    
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -60,6 +61,7 @@ class MainWindow(QMainWindow):
         self.savedN = True
         self.savedNN = True
         self.savedNCon = True
+        self.savedCon = True
         self.newNoteSavePushButton = self.findChild(QPushButton,"newNoteSavePushButton")
         self.newNoteTextEdit = self.findChild(QTextEdit, "newNoteTextEdit")
         self.noteEditLayout = self.findChild(QWidget, "noteEditLayout_2")
@@ -72,7 +74,10 @@ class MainWindow(QMainWindow):
         self.actionCalendar.triggered.connect(self.exitEditCalendar)
         self.actionNew_concept.triggered.connect(self.newConcept)
         self.calendar = self.findChild(QCalendarWidget,"calendarWidget")
+        self.openConceptPageTreeWidget = self.findChild(QTreeWidget,"openConceptPageTreeWidget")
         self.calendarPage = self.findChild(QWidget,"CalendarPage")
+        self.openConceptPage = self.findChild(QWidget,"openConceptPage")
+        self.conceptPage = self.findChild(QWidget, "conceptPage_2")
         self.notePage = self.findChild(QWidget,"NotePage")
         self.newNotePage = self.findChild(QWidget,"newNotePage")
         self.calendarEditPage = self.findChild(QWidget,"CalendarEditPage")
@@ -97,9 +102,21 @@ class MainWindow(QMainWindow):
         self.newConceptTreeWidget = self.findChild(QTreeWidget, "newConceptTreeWidget")
         self.newConceptTextEdit = self.findChild(QTextEdit, "newConceptTextEdit")
         self.newConceptSavePushButton = self.findChild(QPushButton,"newConceptSavePushButton")
+        self.openConceptPathLabel = self.findChild(QLabel, "openConceptPathLabel")
+        self.newConceptDescriptionLineEdit = self.findChild(QLineEdit,"newConceptDescriptionLineEdit")
+        self.conceptTitelLineEdit = self.findChild(QLineEdit,"conceptTitelLineEdit")
+        self.conceptRootShowLabel = self.findChild(QLabel, "conceptRootShowLabel")
+        self.conceptDescriptionLineEdit = self.findChild(QLineEdit, "conceptDescriptionLineEdit")
+        self.conceptEditLayout = self.findChild(QWidget,"conceptEditLayout")
+        self.conceptShowLayout = self.findChild(QWidget, "conceptShowLayout")
+        self.conceptTextEdit = self.findChild(QTextEdit,"conceptTextEdit")
+        self.conceptSavePushButton = self.findChild(QPushButton,"conceptSavePushButton")
+        self.conceptTextBrowser = self.findChild(QTextBrowser, "conceptTextBrowser")
+        self.conceptEditPushButton = self.findChild(QPushButton,"conceptEditPushButton")
         self.newNoteTitleLineEdit.textChanged.connect(self.reloadNewNotePath)
         self.newConceptTitleLineEdit.textChanged.connect(self.reloadNewConceptPath)
         self.noteTreeView.itemClicked.connect(self.itemClicked)
+        self.openConceptPageTreeWidget.itemClicked.connect(self.conceptItemClicked)
         self.noteTreeView.activated.connect(self.openNote)
         self.eventsComboBox.currentTextChanged.connect(self.updateCalendarEvent)
         self.calendarEventSavePushButton.pressed.connect(self.safeCalendarEvent)
@@ -107,11 +124,15 @@ class MainWindow(QMainWindow):
         self.calendarNotesTextEdit.textChanged.connect(self.unSave)
         self.calendarEditExitPushButton.pressed.connect(self.exitEditCalendar)
         self.newConceptRootPushButton.pressed.connect(self.changeConceptPath)
+        self.newConceptRootPushButton.pressed.connect(self.changeConceptPath)
+        self.actionCosepts = self.findChild(QAction,"actionCosepts")
         self.calendarEditPage.hide()
         self.newConceptPage.hide()
         self.noteLoadPage.hide()
         self.notePage.hide()
+        self.conceptPage.hide()
         self.newNotePage.hide()
+        self.openConceptPage.hide()
         self.label_2 = self.findChild(QLabel,"label_2")
         self.calendar.selectionChanged.connect(self.grab_date)
         self.calendar.activated.connect(self.editCalendar)
@@ -123,6 +144,16 @@ class MainWindow(QMainWindow):
         self.newNotePathLabel.pressed.connect(self.changePath)
         self.newNoteSavePushButton.pressed.connect(self.saveNewNote)
         self.newConceptSavePushButton.pressed.connect(self.saveNewConcept)
+        self.actionCosepts.triggered.connect(self.openConceptTree)
+        self.openConceptPageTreeWidget.activated.connect(self.openConcept)
+        self.conceptEditPushButton.pressed.connect(self.editConcept)
+        self.conceptSavePushButton.pressed.connect(self.saveConcept)
+        self.noteSavePushButton = self.findChild(QPushButton, "noteSavePushButton")
+        self.noteSavePushButton.pressed.connect(self.saveNote)
+        self.noteTextBrowser.anchorClicked.connect(self.linkClicked) 
+        self.conceptTextBrowser.anchorClicked.connect(self.linkClicked) 
+
+
         
     def grab_date(self):
         self.dateSelected = self.calendar.selectedDate()
@@ -157,7 +188,10 @@ class MainWindow(QMainWindow):
             self.safeCheck("NC")
         if self.saved == False:
             self.safeCheck("C")
+        if self.savedCon == False:
+            self.safeCheck("Con")
         self.newNotePage.hide()
+        self.openConceptPage.hide()
         self.pickedDateLabel.setText(self.dateSelected)
         self.eventsComboBox.clear()
         self.eventsComboBox.addItem("None selected")
@@ -246,7 +280,9 @@ class MainWindow(QMainWindow):
             dlg.setText("Note not saved, do you you want to save?")    
         if type == "NN":
             dlg.setText("Note not saved, do you you want to save?")  
-        if type == "NCon":
+        if type == "NC":
+            dlg.setText("Concept not saved, do you you want to save?")  
+        if type == "Con":
             dlg.setText("Concept not saved, do you you want to save?")  
         dlg.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
         dlg.setIcon(QMessageBox.Icon.Question)
@@ -284,6 +320,12 @@ class MainWindow(QMainWindow):
                     self.saveNewConcept()
             else:
                 self.savedNCon = True
+        if type == "Con":
+            if button == QMessageBox.StandardButton.Yes:
+                if self.savedCon == False:
+                    self.saveConcept()
+            else:
+                self.savedCon = True
 
     def loadNoteTree(self, s):
         try:
@@ -298,6 +340,8 @@ class MainWindow(QMainWindow):
             self.safeCheck("NN")
         if self.savedNCon == False:
             self.safeCheck("NC")
+        if self.savedCon == False:
+            self.safeCheck("Con")
         try: 
             tree = et.fromstring(self.noteFile)
         except:
@@ -331,11 +375,15 @@ class MainWindow(QMainWindow):
             self.safeCheck("NN")
         if self.savedNCon == False:
             self.safeCheck("NC")
+        if self.savedCon == False:
+            self.safeCheck("Con")
         self.calendarEditPage.hide()
         self.newConceptPage.hide()
         self.noteLoadPage.hide()
         self.notePage.hide()
+        self.conceptPage.hide()
         self.newNotePage.hide()
+        self.openConceptPage.hide()
         self.calendarPage.show()
 
     def openLoadNotes(self):
@@ -343,8 +391,10 @@ class MainWindow(QMainWindow):
         self.newConceptPage.hide()
         self.noteLoadPage.show()
         self.notePage.hide()
+        self.conceptPage.hide()
         self.calendarPage.hide()
         self.newNotePage.hide()
+        self.openConceptPage.hide()
         self.loadNoteTree(self.noteFile)
     
     def itemClicked(self):
@@ -353,6 +403,13 @@ class MainWindow(QMainWindow):
         self.pickedNoteRootLable.setText(text)
         self.currentNote = item.text(0)
         self.currentPath = text      
+        
+    def conceptItemClicked(self):
+        item=self.openConceptPageTreeWidget.currentItem()
+        text = self.getParentPath(item)
+        self.openConceptPathLabel.setText(text)
+        self.currentNote = item.text(0)
+        self.currentPath = text   
     
     def getParentPath(self, item):
         def getParent(item,outstring):
@@ -373,17 +430,116 @@ class MainWindow(QMainWindow):
         self.noteLoadPage.hide()
         self.calendarPage.hide()
         self.newNotePage.hide()
+        self.openConceptPage.hide()
         self.notePage.show()
+        self.conceptPage.hide()
         self.noteShowLayout.show()
         self.noteEditLayout.hide()
         self.noteTextBrowser.setText(self.convertNote(self.currentPath))
         self.noteTextBrowser.setOpenExternalLinks(True)
-        self.noteTextBrowser.anchorClicked.connect(self.linkClicked) 
         self.noteTitleLineEdit.setText(self.currentNote)
         self.noteShowRootLabel.setText(self.currentPath)
-    
+        self.noteTextBrowser.setToolTip("") 
+
+
     def linkClicked(self, url):
-        print("Link clicked:", url.toString())
+        path = url.toString()
+        self.currentPath = path
+        try: self.openConcept()
+        except:self.errorShow("000000020")
+    
+    def openConcept(self):
+        try:
+            self.conceptFile = open('concepts.xml', "r").read()
+        except:
+            self.errorShow("000000014")
+        self.calendarEditPage.hide()
+        self.newConceptPage.hide()
+        self.noteLoadPage.hide()
+        self.calendarPage.hide()
+        self.newNotePage.hide()
+        self.openConceptPage.hide()
+        self.notePage.hide()
+        self.conceptPage.show()
+        self.conceptShowLayout.show()
+        self.conceptEditLayout.hide()
+        self.conceptTextBrowser.setText(self.convertConcept(self.currentPath))
+        self.conceptTextBrowser.setOpenExternalLinks(True)
+        try:self.conceptDescriptionLineEdit.setText(self.conceptData[self.currentPath][0])
+        except:pass
+        self.conceptDescriptionLineEdit.setEnabled(False)
+        self.conceptTitelLineEdit.setText(self.currentNote)
+        self.conceptRootShowLabel.setText(self.currentPath)
+
+    def editConcept(self):
+        self.conceptShowLayout.hide()
+        self.conceptEditLayout.show()
+        self.conceptDescriptionLineEdit.setEnabled(True)
+        try: self.conceptTextEdit.setPlainText(self.conceptData[self.currentPath][1])
+        except: self.conceptTextEdit.setPlainText("")
+        self.savedCon = False
+
+
+    def saveConcept(self):
+        try:
+            self.conceptData[self.currentPath] = [self.conceptDescriptionLineEdit.text(),self.conceptTextEdit.toPlainText()]
+            conceptFileWrite = open ('concepts.json', "w")
+            json.dump(self.conceptData, conceptFileWrite)
+            self.savedCon = True
+            self.openConcept()
+        except:
+            self.errorShow("000000019")
+
+
+    def openConceptTree(self):
+        self.calendarEditPage.hide()
+        self.newConceptPage.hide()
+        self.noteLoadPage.hide()
+        self.calendarPage.hide()
+        self.newNotePage.hide()
+        self.notePage.hide()
+        self.conceptPage.hide()
+        self.noteShowLayout.hide()
+        self.noteEditLayout.hide()
+        self.openConceptPage.show()
+        try:
+            self.conceptFile = open('concepts.xml', "r").read()
+        except:
+            self.errorShow("000000014")
+        if self.saved == False:
+            self.safeCheck("C")
+        if self.savedN == False:
+            self.safeCheck("N")
+        if self.savedNN == False:
+            self.safeCheck("NN")
+        if self.savedNCon == False:
+            self.safeCheck("NC")
+        if self.savedCon == False:
+            self.safeCheck("Con")
+        try: 
+            tree = et.fromstring(self.conceptFile)
+        except:
+            root = et.Element("noter")
+            tree = et.ElementTree(root)
+            with open("notes.xml", "wb") as file:
+                tree.write(file)
+            tree = et.fromstring(self.noteFile)
+        self.openConceptPageTreeWidget.clear()
+        self.openConceptPageTreeWidget.setColumnCount(1)
+        widgetItem = QTreeWidgetItem([tree.tag])
+        self.openConceptPageTreeWidget.addTopLevelItem(widgetItem)
+        self.openConceptPageTreeWidget.setHeaderHidden(True)
+
+        def displayNoteTree(widgetItem,s):
+            for child in s:
+                branch = QTreeWidgetItem([child.attrib["name"]])
+                widgetItem.addChild(branch)
+                displayNoteTree(branch, child)
+            if s.text is not None:
+                content = s.text
+                widgetItem.addChild(QTreeWidgetItem([content]))
+        displayNoteTree(widgetItem, tree)
+
 
     def newConcept(self):
         self.calendarEditPage.hide()
@@ -392,6 +548,8 @@ class MainWindow(QMainWindow):
         self.calendarPage.hide()
         self.newNotePage.hide()
         self.notePage.hide()
+        self.conceptPage.hide()
+        self.openConceptPage.hide()
         self.noteShowLayout.hide()
         self.noteEditLayout.hide()
         self.newConceptRootPushButton.hide()
@@ -470,12 +628,12 @@ class MainWindow(QMainWindow):
                     tree.write('concepts.xml')
                     
                     try:
-                        self.conceptData[f"{self.currentPath}/{itemName}"] = self.newConceptTextEdit.toPlainText()
+                        self.conceptData[f"{self.currentPath}/{itemName}"] = [self.newConceptDescriptionLineEdit.text(), self.newConceptTextEdit.toPlainText()]
                         noteFileWrite = open ('concepts.json', "w")
                         json.dump(self.conceptData, noteFileWrite)
                         self.savedNCon = True
                         self.currentPath = f"{self.currentPath}/{itemName}"
-                        self.openNote()
+                        self.openConcept()
                     except:
                         self.errorShow("000000017")
                     
@@ -503,12 +661,10 @@ class MainWindow(QMainWindow):
     def editNote(self):
         self.noteShowLayout.hide()
         self.noteEditLayout.show()
-        self.noteTextEdit.setPlainText(self.noteData[self.currentPath])
         try: self.noteTextEdit.setPlainText(self.noteData[self.currentPath])
         except: self.noteTextEdit.setPlainText("")
         self.savedN = False
-        self.noteSavePushButton = self.findChild(QPushButton, "noteSavePushButton")
-        self.noteSavePushButton.pressed.connect(self.saveNote)
+        
         
     def saveNote(self):
         try:
@@ -530,6 +686,8 @@ class MainWindow(QMainWindow):
             self.safeCheck("NN")
         if self.savedNCon == False:
             self.safeCheck("NC")
+        if self.savedCon == False:
+            self.safeCheck("Con")
         try:
             self.noteFile = open('notes.xml', "r").read()
         except:
@@ -554,7 +712,9 @@ class MainWindow(QMainWindow):
         self.noteLoadPage.hide()
         self.calendarPage.hide()
         self.notePage.hide()
+        self.conceptPage.hide()
         self.newNotePage.show()
+        self.openConceptPage.hide()
         self.newNoteTreeWidget = self.findChild(QTreeWidget, "newNoteTreeWidget")
         self.newNoteTreeWidget.setColumnCount(1)
         self.newNoteTreeWidget.setHeaderHidden(True)
@@ -630,7 +790,22 @@ class MainWindow(QMainWindow):
         prefix = "concept["
         suffix = "]"
         pattern = re.escape(prefix) + "(.*?)" + re.escape(suffix)
-        try: replaced_text = re.sub(pattern, lambda match: "<a href='{0}'>{1}</a>".format(match.group(1),match.group(1)), text)
+        try: replaced_text = re.sub(pattern, lambda match: "<a title='{0}', href='{1}'>{2}</a>".format(self.conceptData[match.group(1).split("><",1)[1]][0],match.group(1).split("><",1)[1],match.group(1).split("><",1)[1]), text)
+        except: replaced_text = text
+        prefix = "link["
+        suffix = "]"
+        pattern = re.escape(prefix) + "(.*?)" + re.escape(suffix)
+        try: replaced_text = re.sub(pattern, lambda match: "<a href='{0}'>{1}</a>".format(match.group(1).split(" ",1)[0], match.group(1).split(" ",1)[1]), replaced_text)
+        except: pass
+        return replaced_text
+    
+    def convertConcept(self,concept):
+        try: text = self.conceptData[concept][1]
+        except: text = ""
+        prefix = "concept["
+        suffix = "]"
+        pattern = re.escape(prefix) + "(.*?)" + re.escape(suffix)
+        try: replaced_text = re.sub(pattern, lambda match: "<a href='{0}'>{1}</a>".format(match.group(1).split("><",1)[0],match.group(1).split("><",1)[1]), text)
         except: pass
         prefix = "link["
         suffix = "]"

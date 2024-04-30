@@ -16,7 +16,10 @@
   "000000015" : "Error loading concepts.json: Code 000000015",
   "000000016" : "Error saving concepts.xml: concept already exist",
   "000000017" : "Error saving concepts.json: Code 000000017",
-  "000000018" : "Error saving concepts.xml: Code 000000018"
+  "000000018" : "Error saving concepts.xml: Code 000000018",
+  "000000019" : "Error saving concepts.json: Code 000000019",
+  "000000020" : "Error finding concept: Code 000000020"
+  
   
 
 
