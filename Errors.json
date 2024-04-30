@@ -11,7 +11,13 @@
   "000000010" : "Error loading data.json: Code 000000010",
   "000000011" : "Error saving data.json: Code 000000011",
   "000000012" : "Error saving notes.xml: Code 000000012",
-  "000000013" : "Error saving notes.xml: note already exist"
+  "000000013" : "Error saving notes.xml: note already exist",
+  "000000014" : "Error loading concepts.xml: Code 000000014",
+  "000000015" : "Error loading concepts.json: Code 000000015",
+  "000000016" : "Error saving concepts.xml: concept already exist",
+  "000000017" : "Error saving concepts.json: Code 000000017",
+  "000000018" : "Error saving concepts.xml: Code 000000018"
+  
 
 
 
