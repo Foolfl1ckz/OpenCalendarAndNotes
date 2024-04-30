@@ -1,6 +1,1 @@
-<noter>
-    <Fysik>Tove</Fysik>
-    <Matematik>Jani</Matematik>
-    <Samf>Reminder</Samf>
-    <Dansk>Don't forget me this weekend!</Dansk>
-</noter>
+<noter><Note name="Mat"><Note name="Tis" /></Note></noter>

@@ -79,6 +79,9 @@ class MainWindow(QMainWindow):
         self.saved = True
         self.savedCE = True
         self.savedN = True
+        self.savedNN = True
+        self.newNoteSavePushButton = self.findChild(QPushButton,"newNoteSavePushButton")
+        self.newNoteTextEdit = self.findChild(QTextEdit, "newNoteTextEdit")
         self.noteEditLayout = self.findChild(QWidget, "noteEditLayout_2")
         self.noteShowLayout = self.findChild(QWidget, "noteShowLayout_2")
         self.noteTextEdit = self.findChild(QTextEdit, "noteTextEdit")
@@ -126,6 +129,7 @@ class MainWindow(QMainWindow):
         self.noteEditPushButton.pressed.connect(self.editNote)
         self.newNoteTreeWidget.activated.connect(self.showRootLabel)
         self.newNotePathLabel.pressed.connect(self.changePath)
+        self.newNoteSavePushButton.pressed.connect(self.saveNewNote)
         
        
         
@@ -158,6 +162,10 @@ class MainWindow(QMainWindow):
     def editCalendar(self):
         if self.savedN == False:
             self.safeCheck("N")
+        if self.savedNN == False:
+            self.safeCheck("NN")
+        if self.saved == False:
+            self.safeCheck("C")
         self.newNotePage.hide()
         self.pickedDateLabel.setText(self.dateSelected)
         self.eventsComboBox.clear()
@@ -246,6 +254,8 @@ class MainWindow(QMainWindow):
             dlg.setText("Calender not saved, do you you want to save?")
         if type == "N":
             dlg.setText("Note not saved, do you you want to save?")    
+        if type == "NN":
+            dlg.setText("Note not saved, do you you want to save?")  
         dlg.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
         dlg.setIcon(QMessageBox.Icon.Question)
         button = dlg.exec()
@@ -270,14 +280,30 @@ class MainWindow(QMainWindow):
                 self.saveNote()
             else:
                 self.savedN = True
+        if type == "NN":
+            if self.savedNN == False:
+                self.saveNewNote()
 
 
     def loadNoteTree(self, s):
+        try:
+            self.noteFile = open('notes.xml', "r").read()
+        except:
+            self.errorShow("000000009")
         if self.saved == False:
             self.safeCheck("C")
         if self.savedN == False:
             self.safeCheck("N")
-        tree = et.fromstring(s)
+        if self.savedNN == False:
+            self.safeCheck("NN")
+        try: 
+            tree = et.fromstring(self.noteFile)
+        except:
+            root = et.Element("noter")
+            tree = et.ElementTree(root)
+            with open("notes.xml", "wb") as file:
+                tree.write(file)
+            tree = et.fromstring(self.noteFile)
         self.noteTreeView.clear()
         self.noteTreeView.setColumnCount(1)
         widgetItem = QTreeWidgetItem([tree.tag])
@@ -286,7 +312,7 @@ class MainWindow(QMainWindow):
 
         def displayNoteTree(widgetItem,s):
             for child in s:
-                branch = QTreeWidgetItem([child.tag])
+                branch = QTreeWidgetItem([child.attrib["name"]])
                 widgetItem.addChild(branch)
                 displayNoteTree(branch, child)
             if s.text is not None:
@@ -299,6 +325,8 @@ class MainWindow(QMainWindow):
          self.safeCheck("C")
         if self.savedN == False:
          self.safeCheck("N")
+        if self.savedNN == False:
+            self.safeCheck("NN")
         self.calendarEditPage.hide()
         self.noteLoadPage.hide()
         self.notePage.hide()
@@ -330,6 +358,10 @@ class MainWindow(QMainWindow):
         return getParent(item,item.text(0))
 
     def openNote(self):
+        try:
+            self.noteFile = open('notes.xml', "r").read()
+        except:
+            self.errorShow("000000009")
         self.calendarEditPage.hide()
         self.noteLoadPage.hide()
         self.calendarPage.hide()
@@ -339,9 +371,12 @@ class MainWindow(QMainWindow):
         self.noteEditLayout.hide()
         self.noteTextBrowser.setText(self.convertNote(self.currentPath))
         self.noteTextBrowser.setOpenExternalLinks(True)
+        self.noteTextBrowser.anchorClicked.connect(self.linkClicked) 
         self.noteTitleLineEdit.setText(self.currentNote)
         self.noteShowRootLabel.setText(self.currentPath)
-        
+    
+    def linkClicked(self, url):
+        print("Link clicked:", url.toString())
 
     def editNote(self):
         self.noteShowLayout.hide()
@@ -366,16 +401,32 @@ class MainWindow(QMainWindow):
 
 
     def openNewNotes(self):
-        #TODO#
+
         if self.saved == False:
             self.safeCheck("C")
         if self.savedN == False:
             self.safeCheck("N")
-        self.savedNN = False #TODO gør det så det kun sker ved ændringer
+        if self.savedNN == False:
+            self.safeCheck("NN")
+        try:
+            self.noteFile = open('notes.xml', "r").read()
+        except:
+            self.errorShow("000000009")
+        self.savedNN = False 
         self.newNoteTreeWidget.clear()
         self.newNoteTreeWidget.show()
         self.newNotePathLabel.hide()
-        tree = et.fromstring(self.noteFile)
+        self.newNotePathLabel.setText("")
+        self.newNoteTitleLineEdit.clear()
+        try: 
+            tree = et.fromstring(self.noteFile)
+        except:
+            root = et.Element("noter")
+            tree = et.ElementTree(root)
+            with open("notes.xml", "wb") as file:
+                tree.write(file)
+            tree = et.fromstring(self.noteFile)
+            
         self.calendarEditPage.hide()
         self.noteLoadPage.hide()
         self.calendarPage.hide()
@@ -391,7 +442,7 @@ class MainWindow(QMainWindow):
 
         def displayNoteTree(widgetItem,s):
             for child in s:
-                branch = QTreeWidgetItem([child.tag])
+                branch = QTreeWidgetItem([child.attrib["name"]])
                 widgetItem.addChild(branch)
                 displayNoteTree(branch, child)
             if s.text is not None:
@@ -401,7 +452,44 @@ class MainWindow(QMainWindow):
 
     def saveNewNote(self):
         if not self.savedNN:
-            pass #TODO gem i xml og json 
+            try:
+                itemName = self.newNoteTitleLineEdit.text()
+                tree = et.parse("notes.xml")
+                
+                tags = self.currentPath.split('/')
+                if tags == ["noter"]:
+                    new_current_element = tree.getroot()
+                else: 
+                    if tags[0] == "noter":
+                        tags.pop(0)
+                    current_element = tree
+
+                    for tag in tags:
+                        matching_elements = current_element.findall(f'.//Note[@name="{tag}"]')
+                        if matching_elements:
+                            new_current_element = matching_elements[0]
+                            
+
+                if  f"{self.currentPath}/{itemName}" not in self.noteData:
+                    et.SubElement(new_current_element, "Note", name=itemName)
+                    tree.write('notes.xml')
+                    
+                    try:
+                        self.noteData[f"{self.currentPath}/{itemName}"] = self.newNoteTextEdit.toPlainText()
+                        noteFileWrite = open ('data.json', "w")
+                        json.dump(self.noteData, noteFileWrite)
+                        self.savedNN = True
+                        self.currentPath = f"{self.currentPath}/{itemName}"
+                        self.openNote()
+                    except:
+                        self.errorShow("000000011")
+                    
+                else:
+                    self.errorShow("000000013")
+                
+            except:
+                self.errorShow("000000012")
+                return
 
     def showRootLabel(self):
         self.newNotePathLabel.show()
@@ -420,11 +508,12 @@ class MainWindow(QMainWindow):
         prefix = "concept["
         suffix = "]"
         pattern = re.escape(prefix) + "(.*?)" + re.escape(suffix)
-        replaced_text = re.sub(pattern, lambda match: "<a href='#'>{}</a>".format(match.group(1)), text)
+        replaced_text = re.sub(pattern, lambda match: "<a href='{0}'>{2}</a>".format(match.group(1),match.group(1)), text)
         prefix = "link["
         suffix = "]"
         pattern = re.escape(prefix) + "(.*?)" + re.escape(suffix)
-        replaced_text = re.sub(pattern, lambda match: "<a href='https://{}'>link</a>".format(match.group(1)), replaced_text)
+        try: replaced_text = re.sub(pattern, lambda match: "<a href='{0}'>{1}</a>".format(match.group(1).split(" ",1)[0], match.group(1).split(" ",1)[1]), replaced_text)
+        except: pass
         return replaced_text
 
     def changePath(self):
@@ -439,7 +528,7 @@ class MainWindow(QMainWindow):
         self.newNoteTreeWidget.addTopLevelItem(widgetItem)
         def displayNoteTree(widgetItem,s):
             for child in s:
-                branch = QTreeWidgetItem([child.tag])
+                branch = QTreeWidgetItem([child.attrib["name"]])
                 widgetItem.addChild(branch)
                 displayNoteTree(branch, child)
             if s.text is not None:
