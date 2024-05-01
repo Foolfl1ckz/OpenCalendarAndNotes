@@ -79,6 +79,7 @@ class MainWindow(QMainWindow):
         self.openConceptPage = self.findChild(QWidget,"openConceptPage")
         self.conceptPage = self.findChild(QWidget, "conceptPage_2")
         self.notePage = self.findChild(QWidget,"NotePage")
+        self.helpPage = self.findChild(QWidget, "helpPage_2")
         self.newNotePage = self.findChild(QWidget,"newNotePage")
         self.calendarEditPage = self.findChild(QWidget,"CalendarEditPage")
         self.noteLoadPage = self.findChild(QWidget,"NoteLoadPage")
@@ -113,6 +114,7 @@ class MainWindow(QMainWindow):
         self.conceptSavePushButton = self.findChild(QPushButton,"conceptSavePushButton")
         self.conceptTextBrowser = self.findChild(QTextBrowser, "conceptTextBrowser")
         self.conceptEditPushButton = self.findChild(QPushButton,"conceptEditPushButton")
+        self.actionHelp =self.findChild(QAction, "actionHelp")
         self.newNoteTitleLineEdit.textChanged.connect(self.reloadNewNotePath)
         self.newConceptTitleLineEdit.textChanged.connect(self.reloadNewConceptPath)
         self.noteTreeView.itemClicked.connect(self.itemClicked)
@@ -132,6 +134,7 @@ class MainWindow(QMainWindow):
         self.notePage.hide()
         self.conceptPage.hide()
         self.newNotePage.hide()
+        self.helpPage.hide()
         self.openConceptPage.hide()
         self.label_2 = self.findChild(QLabel,"label_2")
         self.calendar.selectionChanged.connect(self.grab_date)
@@ -152,8 +155,28 @@ class MainWindow(QMainWindow):
         self.noteSavePushButton.pressed.connect(self.saveNote)
         self.noteTextBrowser.anchorClicked.connect(self.linkClicked) 
         self.conceptTextBrowser.anchorClicked.connect(self.linkClicked) 
+        self.actionHelp.triggered.connect(self.openHelpPage)
 
-
+    def openHelpPage(self):
+        if self.savedN == False:
+            self.safeCheck("N")
+        if self.savedNN == False:
+            self.safeCheck("NN")
+        if self.savedNCon == False:
+            self.safeCheck("NC")
+        if self.saved == False:
+            self.safeCheck("C")
+        if self.savedCon == False:
+            self.safeCheck("Con")
+        self.calendarEditPage.hide()
+        self.calendarPage.hide()
+        self.newConceptPage.hide()
+        self.noteLoadPage.hide()
+        self.notePage.hide()
+        self.conceptPage.hide()
+        self.newNotePage.hide()
+        self.helpPage.show()
+        self.openConceptPage.hide()
         
     def grab_date(self):
         self.dateSelected = self.calendar.selectedDate()
@@ -191,6 +214,7 @@ class MainWindow(QMainWindow):
         if self.savedCon == False:
             self.safeCheck("Con")
         self.newNotePage.hide()
+        self.helpPage.hide()
         self.openConceptPage.hide()
         self.pickedDateLabel.setText(self.dateSelected)
         self.eventsComboBox.clear()
@@ -383,6 +407,7 @@ class MainWindow(QMainWindow):
         self.notePage.hide()
         self.conceptPage.hide()
         self.newNotePage.hide()
+        self.helpPage.hide()
         self.openConceptPage.hide()
         self.calendarPage.show()
 
@@ -394,6 +419,7 @@ class MainWindow(QMainWindow):
         self.conceptPage.hide()
         self.calendarPage.hide()
         self.newNotePage.hide()
+        self.helpPage.hide()
         self.openConceptPage.hide()
         self.loadNoteTree(self.noteFile)
     
@@ -430,11 +456,14 @@ class MainWindow(QMainWindow):
         self.noteLoadPage.hide()
         self.calendarPage.hide()
         self.newNotePage.hide()
+        self.helpPage.hide()
         self.openConceptPage.hide()
         self.notePage.show()
         self.conceptPage.hide()
         self.noteShowLayout.show()
         self.noteEditLayout.hide()
+        self.noteTextBrowser.clear()
+        self.noteTextBrowser.setPlainText("")
         self.noteTextBrowser.setText(self.convertNote(self.currentPath))
         self.noteTextBrowser.setOpenExternalLinks(True)
         self.noteTitleLineEdit.setText(self.currentNote)
@@ -458,11 +487,13 @@ class MainWindow(QMainWindow):
         self.noteLoadPage.hide()
         self.calendarPage.hide()
         self.newNotePage.hide()
+        self.helpPage.hide()
         self.openConceptPage.hide()
         self.notePage.hide()
         self.conceptPage.show()
         self.conceptShowLayout.show()
         self.conceptEditLayout.hide()
+        self.conceptTextBrowser.clear()
         self.conceptTextBrowser.setText(self.convertConcept(self.currentPath))
         self.conceptTextBrowser.setOpenExternalLinks(True)
         try:self.conceptDescriptionLineEdit.setText(self.conceptData[self.currentPath][0])
@@ -470,6 +501,7 @@ class MainWindow(QMainWindow):
         self.conceptDescriptionLineEdit.setEnabled(False)
         self.conceptTitelLineEdit.setText(self.currentNote)
         self.conceptRootShowLabel.setText(self.currentPath)
+        self.noteTextBrowser.setToolTip("") 
 
     def editConcept(self):
         self.conceptShowLayout.hide()
@@ -497,6 +529,7 @@ class MainWindow(QMainWindow):
         self.noteLoadPage.hide()
         self.calendarPage.hide()
         self.newNotePage.hide()
+        self.helpPage.hide()
         self.notePage.hide()
         self.conceptPage.hide()
         self.noteShowLayout.hide()
@@ -547,6 +580,7 @@ class MainWindow(QMainWindow):
         self.noteLoadPage.hide()
         self.calendarPage.hide()
         self.newNotePage.hide()
+        self.helpPage.hide()
         self.notePage.hide()
         self.conceptPage.hide()
         self.openConceptPage.hide()
@@ -714,6 +748,7 @@ class MainWindow(QMainWindow):
         self.notePage.hide()
         self.conceptPage.hide()
         self.newNotePage.show()
+        self.helpPage.hide()
         self.openConceptPage.hide()
         self.newNoteTreeWidget = self.findChild(QTreeWidget, "newNoteTreeWidget")
         self.newNoteTreeWidget.setColumnCount(1)
@@ -790,7 +825,7 @@ class MainWindow(QMainWindow):
         prefix = "concept["
         suffix = "]"
         pattern = re.escape(prefix) + "(.*?)" + re.escape(suffix)
-        try: replaced_text = re.sub(pattern, lambda match: "<a title='{0}', href='{1}'>{2}</a>".format(self.conceptData[match.group(1).split("><",1)[1]][0],match.group(1).split("><",1)[1],match.group(1).split("><",1)[1]), text)
+        try:replaced_text = re.sub(pattern, lambda match: "<a title='{0}', href='{1}'>{2}</a>".format(self.conceptData[match.group(1).split("><",1)[0]][0],match.group(1).split("><",1)[0],match.group(1).split("><",1)[1]), text)
         except: replaced_text = text
         prefix = "link["
         suffix = "]"
@@ -805,8 +840,8 @@ class MainWindow(QMainWindow):
         prefix = "concept["
         suffix = "]"
         pattern = re.escape(prefix) + "(.*?)" + re.escape(suffix)
-        try: replaced_text = re.sub(pattern, lambda match: "<a href='{0}'>{1}</a>".format(match.group(1).split("><",1)[0],match.group(1).split("><",1)[1]), text)
-        except: pass
+        try: replaced_text = re.sub(pattern, lambda match: "<a title='{0}', href='{1}'>{2}</a>".format(self.conceptData[match.group(1).split("><",1)[0]][0],match.group(1).split("><",1)[0],match.group(1).split("><",1)[1]), text)
+        except: replaced_text = text
         prefix = "link["
         suffix = "]"
         pattern = re.escape(prefix) + "(.*?)" + re.escape(suffix)
