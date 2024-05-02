@@ -821,7 +821,7 @@ class MainWindow(QMainWindow):
         
     def convertNote(self,note):
         try: text = self.noteData[note]
-        except: text = ""
+        except: return ""
         prefix = "concept["
         suffix = "]"
         pattern = re.escape(prefix) + "(.*?)" + re.escape(suffix)
@@ -836,7 +836,7 @@ class MainWindow(QMainWindow):
     
     def convertConcept(self,concept):
         try: text = self.conceptData[concept][1]
-        except: text = ""
+        except: return ""
         prefix = "concept["
         suffix = "]"
         pattern = re.escape(prefix) + "(.*?)" + re.escape(suffix)
