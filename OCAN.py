@@ -464,7 +464,7 @@ class MainWindow(QMainWindow):
         self.noteEditLayout.hide()
         self.noteTextBrowser.clear()
         self.noteTextBrowser.setPlainText("")
-        self.noteTextBrowser.setText(self.convertNote(self.currentPath))
+        self.noteTextBrowser.setHtml(self.convertNote(self.currentPath))
         self.noteTextBrowser.setOpenExternalLinks(True)
         self.noteTitleLineEdit.setText(self.currentNote)
         self.noteShowRootLabel.setText(self.currentPath)
