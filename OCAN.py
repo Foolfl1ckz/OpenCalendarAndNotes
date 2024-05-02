@@ -589,6 +589,8 @@ class MainWindow(QMainWindow):
         self.newConceptRootPushButton.hide()
         self.newConceptTreeWidget.show()
         self.newConceptTitleLineEdit.setText("")
+        self.newConceptTextEdit.setText("")
+        self.newConceptDescriptionLineEdit.setText("")
         self.savedNCon =False
         try:
             self.conceptFile = open('concepts.xml', "r").read()
@@ -607,6 +609,7 @@ class MainWindow(QMainWindow):
         widgetItem = QTreeWidgetItem([tree.tag])
         self.newConceptTreeWidget.addTopLevelItem(widgetItem)
         self.newConceptTreeWidget.setHeaderHidden(True)
+
 
         def displayNoteTree(widgetItem,s):
             for child in s:
@@ -755,6 +758,7 @@ class MainWindow(QMainWindow):
         self.newNoteTreeWidget.setHeaderHidden(True)
         widgetItem = QTreeWidgetItem([tree.tag])
         self.newNoteTreeWidget.addTopLevelItem(widgetItem)
+        self.newNoteTextEdit.setText("")
         
         
 
