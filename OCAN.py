@@ -213,6 +213,9 @@ class MainWindow(QMainWindow):
             self.safeCheck("C")
         if self.savedCon == False:
             self.safeCheck("Con")
+        self.dateSelected = self.calendar.selectedDate()
+        self.dateSelected = str(self.dateSelected.toString("dd/MM/yyyy"))
+        calendar[self.dateSelected] = {"note": "", "event": [], "event_description": {}}
         self.newNotePage.hide()
         self.helpPage.hide()
         self.openConceptPage.hide()
